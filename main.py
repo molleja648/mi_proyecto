@@ -4,18 +4,25 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import psycopg2, datetime, os, shutil
 
+import os
+import psycopg2
+
 # ---------------- CONFIGURACIÓN ----------------
-DB_NAME = "mi_proyecto"
-DB_USER = "postgres"
-DB_PASS = "clave123"
-DB_HOST = "localhost"
-DB_PORT = "5432"
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASS = os.getenv("DB_PASS")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
 
 def get_conn():
     return psycopg2.connect(
-        dbname=DB_NAME, user=DB_USER, password=DB_PASS,
-        host=DB_HOST, port=DB_PORT
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASS,
+        host=DB_HOST,
+        port=DB_PORT
     )
+
 
 app = FastAPI()
 app.add_middleware(
