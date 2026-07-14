@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema de Tickets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!-- Estilos -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <h1>Sistema de Tickets</h1>
+
+  <!-- Panel de Login -->
+  <div id="panelLogin">
+    <h2>Login</h2>
+    <form id="formLogin" action="javascript:void(0)">
+      <input type="text" id="username" placeholder="Usuario" required>
+      <input type="password" id="password" placeholder="Clave" required>
+      <button type="submit">Entrar</button>
+    </form>
+    <p id="loginMsg" style="color:red;"></p>
+  </div>
+
+  <!-- Panel Administrador -->
+  <div id="panelAdmin" style="display:none;">
+    <h2>Panel Administrador</h2>
+    <nav>
+      <button onclick="mostrarClientes()">Clientes</button>
+      <button onclick="mostrarTecnicos()">Técnicos</button>
+      <button onclick="mostrarTickets()">Tickets</button>
+      <button onclick="mostrarMetricas()">Métricas</button>
+    </nav>
+    <section id="contenidoAdmin"></section>
+  </div>
+
+  <!-- Panel Técnico -->
+  <div id="panelTecnico" style="display:none;">
+    <h2>Panel Técnico</h2>
+    <section id="contenidoTecnico"></section>
+  </div>
+
+  <!-- Script principal -->
+  <script src="/app.js"></script>
+</body>
+</html>
