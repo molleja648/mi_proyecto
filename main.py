@@ -7,7 +7,6 @@ import psycopg2, datetime, os, shutil
 import os
 import psycopg2
 
-# ---------------- CONFIGURACIÓN ----------------
 DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASS = os.getenv("DB_PASS")
@@ -22,6 +21,7 @@ def get_conn():
         host=DB_HOST,
         port=DB_PORT
     )
+
 
 
 app = FastAPI()
