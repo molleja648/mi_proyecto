@@ -316,74 +316,57 @@ def init_data():
     conn = get_conn()
     cur = conn.cursor()
 
-    # Crear tabla usuarios si no existe
+    # 1. Crear tabla usuarios si no existe (con password de 100 caracteres)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
             id SERIAL PRIMARY KEY,
             username VARCHAR(50) UNIQUE NOT NULL,
-            password VARCHAR(50) NOT NULL,
+            password VARCHAR(100) NOT NULL,
             rol VARCHAR(20) NOT NULL
-        )
+        );
     """)
 
-    # Insertar usuario admin de prueba
+    # 2. Crear tabla tecnicos si no existe
     cur.execute("""
-        INSERT INTO usuarios (username, password, rol)
-        VALUES ('admin', '1234', 'admin')
-        ON CONFLICT (username) DO NOTHING
+        CREATE TABLE IF NOT EXISTS tecnicos (
+            id SERIAL PRIMARY KEY,
+            codigo VARCHAR(20) UNIQUE NOT NULL,
+            nombre VARCHAR(100) NOT NULL,
+            telefono VARCHAR(20),
+            direccion VARCHAR(200),
+            correo VARCHAR(100),
+            usuario VARCHAR(50) UNIQUE NOT NULL,
+            password VARCHAR(100) NOT NULL
+        );
     """)
 
-    # Insertar técnico de prueba
+    # 3. Insertar usuario admin de prueba (usando parámetros seguros)
     cur.execute("""
         INSERT INTO usuarios (username, password, rol)
-        VALUES ('tecnico1', 'abcd', 'tecnico')
-        ON CONFLICT (username) DO NOTHING
-    """)
+        VALUES (%s, %s, %s)
+        ON CONFLICT (username) DO NOTHING;
+    """, ("admin", "1234", "admin"))
+
+    # 4. Insertar técnico de prueba
+    cur.execute("""
+        INSERT INTO tecnicos (codigo, nombre, telefono, direccion, correo, usuario, password)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (usuario) DO NOTHING;
+    """, ("TEC001", "Juan Pérez", "3001234567", "Calle 123", "juan@example.com", "tecnico1", "abcd"))
 
     conn.commit()
     cur.close()
     conn.close()
-    return {"msg": "Datos iniciales insertados correctamente"}
-
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS usuarios (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        password VARCHAR(100) NOT NULL,
-        rol VARCHAR(20) NOT NULL
-    );
-    """)
-
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS tecnicos (
-        id SERIAL PRIMARY KEY,
-        codigo VARCHAR(20) UNIQUE NOT NULL,
-        nombre VARCHAR(100) NOT NULL,
-        telefono VARCHAR(20),
-        direccion VARCHAR(200),
-        correo VARCHAR(100),
-        usuario VARCHAR(50) UNIQUE NOT NULL,
-        password VARCHAR(100) NOT NULL
-    );
-    """)
-
-    cur.execute("""
-    INSERT INTO usuarios (username, password, rol)
-    VALUES (%s, %s, %s)
-    ON CONFLICT (username) DO NOTHING;
-    """, ("admin", "1234", "admin"))
-
-    cur.execute("""
-    INSERT INTO tecnicos (codigo, nombre, telefono, direccion, correo, usuario, password)
-    VALUES (%s, %s, %s, %s, %s, %s, %s)
-    ON CONFLICT (usuario) DO NOTHING;
-    """, ("TEC001", "Juan Pérez", "3001234567", "Calle 123", "juan@example.com", "tecnico1", "abcd"))
-
-    conn.commit()
-    conn.close()
-    return {"msg": "Datos iniciales insertados correctamente"}
+    
+    return {"msg": "Datos iniciales e infraestructura creados correctamente"}
 
 # ---------------- ARCHIVOS ESTÁTICOS ----------------
-app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+
+# 1. Para tus archivos de diseño (CSS, JS, imágenes del sistema)
+app.mount("/static", StaticFiles(directory="static"), name="static_files")
+
+# 2. Para los archivos que suben tus usuarios
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads_files")
+
+# 3. Para servir el index.html automáticamente en la raíz (/)
+app.mount("/", StaticFiles(directory="static", html=True), name="root_static")
