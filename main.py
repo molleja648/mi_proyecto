@@ -402,6 +402,27 @@ def init_data():
 
     except Exception as e:
         return {"error": str(e)}
+@app.get("/reset")
+def reset_data():
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+
+        # Borrar tablas si existen
+        cur.execute("DROP TABLE IF EXISTS tickets CASCADE")
+        cur.execute("DROP TABLE IF EXISTS tecnicos CASCADE")
+        cur.execute("DROP TABLE IF EXISTS clientes CASCADE")
+        cur.execute("DROP TABLE IF EXISTS usuarios CASCADE")
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        # Llamar a init para recrear todo
+        return init_data()
+
+    except Exception as e:
+        return {"error": str(e)}
 
 # ---------------- ARCHIVOS ESTÁTICOS ----------------
 
