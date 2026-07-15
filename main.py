@@ -310,23 +310,45 @@ def metricas():
         "promedio_resolucion": formato_tiempo(prom_resolucion)
     }
 
-# ---------------- RUTA INIT ----------------
+# ---------------- INIT ----------------
 @app.get("/init")
 def init_data():
     conn = get_conn()
     cur = conn.cursor()
 
-    # 1. Crear tabla usuarios si no existe (con password de 100 caracteres)
+    # Tabla usuarios
     cur.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
             id SERIAL PRIMARY KEY,
             username VARCHAR(50) UNIQUE NOT NULL,
-            password VARCHAR(100) NOT NULL,
+            password VARCHAR(50) NOT NULL,
             rol VARCHAR(20) NOT NULL
-        );
+        )
+    """)
+    cur.execute("""
+        INSERT INTO usuarios (username, password, rol)
+        VALUES ('admin', '1234', 'admin')
+        ON CONFLICT (username) DO NOTHING
+    """)
+    cur.execute("""
+        INSERT INTO usuarios (username, password, rol)
+        VALUES ('tecnico1', 'abcd', 'tecnico')
+        ON CONFLICT (username) DO NOTHING
     """)
 
-    # 2. Crear tabla tecnicos si no existe
+    # Tabla clientes
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS clientes (
+            id SERIAL PRIMARY KEY,
+            codigo VARCHAR(20) UNIQUE NOT NULL,
+            nombre VARCHAR(100) NOT NULL,
+            telefono VARCHAR(20),
+            direccion VARCHAR(200),
+            correo VARCHAR(100)
+        )
+    """)
+
+    # Tabla tecnicos
     cur.execute("""
         CREATE TABLE IF NOT EXISTS tecnicos (
             id SERIAL PRIMARY KEY,
@@ -336,29 +358,32 @@ def init_data():
             direccion VARCHAR(200),
             correo VARCHAR(100),
             usuario VARCHAR(50) UNIQUE NOT NULL,
-            password VARCHAR(100) NOT NULL
-        );
+            password VARCHAR(50) NOT NULL
+        )
     """)
 
-    # 3. Insertar usuario admin de prueba (usando parámetros seguros)
+    # Tabla tickets
     cur.execute("""
-        INSERT INTO usuarios (username, password, rol)
-        VALUES (%s, %s, %s)
-        ON CONFLICT (username) DO NOTHING;
-    """, ("admin", "1234", "admin"))
-
-    # 4. Insertar técnico de prueba
-    cur.execute("""
-        INSERT INTO tecnicos (codigo, nombre, telefono, direccion, correo, usuario, password)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        ON CONFLICT (usuario) DO NOTHING;
-    """, ("TEC001", "Juan Pérez", "3001234567", "Calle 123", "juan@example.com", "tecnico1", "abcd"))
+        CREATE TABLE IF NOT EXISTS tickets (
+            id SERIAL PRIMARY KEY,
+            codigo VARCHAR(20) UNIQUE,
+            cliente_id INT REFERENCES clientes(id),
+            tecnico_id INT REFERENCES tecnicos(id),
+            tipo_falla VARCHAR(200),
+            estado VARCHAR(20),
+            fecha_reporte TIMESTAMP,
+            fecha_inicio TIMESTAMP,
+            fecha_cierre TIMESTAMP,
+            evidencia VARCHAR(200),
+            firma VARCHAR(200),
+            observacion TEXT
+        )
+    """)
 
     conn.commit()
     cur.close()
     conn.close()
-    
-    return {"msg": "Datos iniciales e infraestructura creados correctamente"}
+    return {"msg": "Datos iniciales insertados correctamente"}
 
 # ---------------- ARCHIVOS ESTÁTICOS ----------------
 
