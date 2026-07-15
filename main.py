@@ -312,93 +312,96 @@ def metricas():
 
 @app.get("/init")
 def init_data():
-    conn = get_conn()
-    cur = conn.cursor()
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
 
-    # Tabla usuarios
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS usuarios (
-            id SERIAL PRIMARY KEY,
-            username VARCHAR(50) UNIQUE NOT NULL,
-            password VARCHAR(50) NOT NULL,
-            rol VARCHAR(20) NOT NULL
-        )
-    """)
-    cur.execute("""
-        INSERT INTO usuarios (username, password, rol)
-        VALUES ('admin', '1234', 'admin')
-        ON CONFLICT (username) DO NOTHING
-    """)
-    cur.execute("""
-        INSERT INTO usuarios (username, password, rol)
-        VALUES ('tecnico1', 'abcd', 'tecnico')
-        ON CONFLICT (username) DO NOTHING
-    """)
+        # Crear tabla usuarios
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password VARCHAR(50) NOT NULL,
+                rol VARCHAR(20) NOT NULL
+            )
+        """)
+        cur.execute("""
+            INSERT INTO usuarios (username, password, rol)
+            VALUES ('admin', '1234', 'admin')
+            ON CONFLICT (username) DO NOTHING
+        """)
+        cur.execute("""
+            INSERT INTO usuarios (username, password, rol)
+            VALUES ('tecnico1', 'abcd', 'tecnico')
+            ON CONFLICT (username) DO NOTHING
+        """)
 
-    # Tabla clientes
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS clientes (
-            id SERIAL PRIMARY KEY,
-            codigo VARCHAR(20) UNIQUE NOT NULL,
-            nombre VARCHAR(100) NOT NULL,
-            telefono VARCHAR(20),
-            direccion VARCHAR(200),
-            correo VARCHAR(100)
-        )
-    """)
-    cur.execute("""
-        INSERT INTO clientes (codigo, nombre, telefono, direccion, correo)
-        VALUES ('C001', 'Cliente Demo', '3001234567', 'Calle 123', 'demo@correo.com')
-        ON CONFLICT (codigo) DO NOTHING
-    """)
+        # Crear tabla clientes
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS clientes (
+                id SERIAL PRIMARY KEY,
+                codigo VARCHAR(20) UNIQUE NOT NULL,
+                nombre VARCHAR(100) NOT NULL,
+                telefono VARCHAR(20),
+                direccion VARCHAR(200),
+                correo VARCHAR(100)
+            )
+        """)
+        cur.execute("""
+            INSERT INTO clientes (codigo, nombre, telefono, direccion, correo)
+            VALUES ('C001', 'Cliente Demo', '3001234567', 'Calle 123', 'demo@correo.com')
+            ON CONFLICT (codigo) DO NOTHING
+        """)
 
-    # Tabla tecnicos
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS tecnicos (
-            id SERIAL PRIMARY KEY,
-            codigo VARCHAR(20) UNIQUE NOT NULL,
-            nombre VARCHAR(100) NOT NULL,
-            telefono VARCHAR(20),
-            direccion VARCHAR(200),
-            correo VARCHAR(100),
-            usuario VARCHAR(50) UNIQUE NOT NULL,
-            password VARCHAR(50) NOT NULL
-        )
-    """)
-    cur.execute("""
-        INSERT INTO tecnicos (codigo, nombre, telefono, direccion, correo, usuario, password)
-        VALUES ('T001', 'Técnico Demo', '3017654321', 'Carrera 45', 'tecnico@correo.com', 'tecnico1', 'abcd')
-        ON CONFLICT (codigo) DO NOTHING
-    """)
+        # Crear tabla tecnicos
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS tecnicos (
+                id SERIAL PRIMARY KEY,
+                codigo VARCHAR(20) UNIQUE NOT NULL,
+                nombre VARCHAR(100) NOT NULL,
+                telefono VARCHAR(20),
+                direccion VARCHAR(200),
+                correo VARCHAR(100),
+                usuario VARCHAR(50) UNIQUE NOT NULL,
+                password VARCHAR(50) NOT NULL
+            )
+        """)
+        cur.execute("""
+            INSERT INTO tecnicos (codigo, nombre, telefono, direccion, correo, usuario, password)
+            VALUES ('T001', 'Técnico Demo', '3017654321', 'Carrera 45', 'tecnico@correo.com', 'tecnico1', 'abcd')
+            ON CONFLICT (codigo) DO NOTHING
+        """)
 
-    # Tabla tickets
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS tickets (
-            id SERIAL PRIMARY KEY,
-            codigo VARCHAR(20) UNIQUE,
-            cliente_id INT REFERENCES clientes(id),
-            tecnico_id INT REFERENCES tecnicos(id),
-            tipo_falla VARCHAR(200),
-            estado VARCHAR(20),
-            fecha_reporte TIMESTAMP,
-            fecha_inicio TIMESTAMP,
-            fecha_cierre TIMESTAMP,
-            evidencia VARCHAR(200),
-            firma VARCHAR(200),
-            observacion TEXT
-        )
-    """)
-    cur.execute("""
-        INSERT INTO tickets (codigo, cliente_id, tecnico_id, tipo_falla, estado, fecha_reporte)
-        VALUES ('TK001', 1, 1, 'Pantalla azul', 'pendiente', NOW())
-        ON CONFLICT (codigo) DO NOTHING
-    """)
+        # Crear tabla tickets
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS tickets (
+                id SERIAL PRIMARY KEY,
+                codigo VARCHAR(20) UNIQUE,
+                cliente_id INT REFERENCES clientes(id),
+                tecnico_id INT REFERENCES tecnicos(id),
+                tipo_falla VARCHAR(200),
+                estado VARCHAR(20),
+                fecha_reporte TIMESTAMP,
+                fecha_inicio TIMESTAMP,
+                fecha_cierre TIMESTAMP,
+                evidencia VARCHAR(200),
+                firma VARCHAR(200),
+                observacion TEXT
+            )
+        """)
+        cur.execute("""
+            INSERT INTO tickets (codigo, cliente_id, tecnico_id, tipo_falla, estado, fecha_reporte)
+            VALUES ('TK001', 1, 1, 'Pantalla azul', 'pendiente', NOW())
+            ON CONFLICT (codigo) DO NOTHING
+        """)
 
-    conn.commit()
-    cur.close()
-    conn.close()
-    return {"msg": "Tablas creadas e insertados datos de prueba"}
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"msg": "Tablas creadas e insertados datos de prueba"}
 
+    except Exception as e:
+        return {"error": str(e)}
 
 # ---------------- ARCHIVOS ESTÁTICOS ----------------
 
