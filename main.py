@@ -311,10 +311,11 @@ def metricas():
     }
 
 # ---------------- RUTA INIT ----------------
-@app.post("/init")
+@app.get("/init")
 def init_data():
     conn = get_conn()
     cur = conn.cursor()
+    # el resto del bloque igualito como ya lo tienes
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS usuarios (
