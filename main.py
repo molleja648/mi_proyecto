@@ -310,7 +310,6 @@ def metricas():
         "promedio_resolucion": formato_tiempo(prom_resolucion)
     }
 
-# ---------------- INIT ----------------
 @app.get("/init")
 def init_data():
     conn = get_conn()
@@ -347,6 +346,11 @@ def init_data():
             correo VARCHAR(100)
         )
     """)
+    cur.execute("""
+        INSERT INTO clientes (codigo, nombre, telefono, direccion, correo)
+        VALUES ('C001', 'Cliente Demo', '3001234567', 'Calle 123', 'demo@correo.com')
+        ON CONFLICT (codigo) DO NOTHING
+    """)
 
     # Tabla tecnicos
     cur.execute("""
@@ -360,6 +364,11 @@ def init_data():
             usuario VARCHAR(50) UNIQUE NOT NULL,
             password VARCHAR(50) NOT NULL
         )
+    """)
+    cur.execute("""
+        INSERT INTO tecnicos (codigo, nombre, telefono, direccion, correo, usuario, password)
+        VALUES ('T001', 'Técnico Demo', '3017654321', 'Carrera 45', 'tecnico@correo.com', 'tecnico1', 'abcd')
+        ON CONFLICT (codigo) DO NOTHING
     """)
 
     # Tabla tickets
@@ -379,11 +388,17 @@ def init_data():
             observacion TEXT
         )
     """)
+    cur.execute("""
+        INSERT INTO tickets (codigo, cliente_id, tecnico_id, tipo_falla, estado, fecha_reporte)
+        VALUES ('TK001', 1, 1, 'Pantalla azul', 'pendiente', NOW())
+        ON CONFLICT (codigo) DO NOTHING
+    """)
 
     conn.commit()
     cur.close()
     conn.close()
-    return {"msg": "Datos iniciales insertados correctamente"}
+    return {"msg": "Tablas creadas e insertados datos de prueba"}
+
 
 # ---------------- ARCHIVOS ESTÁTICOS ----------------
 
