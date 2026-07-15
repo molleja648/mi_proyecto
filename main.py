@@ -4,9 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import psycopg2, datetime, os, shutil
 
-import os
-import psycopg2
-
+# ---------------- CONFIGURACIÓN ----------------
 DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASS = os.getenv("DB_PASS")
@@ -15,14 +13,9 @@ DB_PORT = os.getenv("DB_PORT")
 
 def get_conn():
     return psycopg2.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASS,
-        host=DB_HOST,
-        port=DB_PORT
+        dbname=DB_NAME, user=DB_USER, password=DB_PASS,
+        host=DB_HOST, port=DB_PORT
     )
-
-
 
 app = FastAPI()
 app.add_middleware(
@@ -316,6 +309,50 @@ def metricas():
         "promedio_respuesta": formato_tiempo(prom_respuesta),
         "promedio_resolucion": formato_tiempo(prom_resolucion)
     }
+
+# ---------------- RUTA INIT ----------------
+@app.post("/init")
+def init_data():
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS usuarios (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password VARCHAR(100) NOT NULL,
+        rol VARCHAR(20) NOT NULL
+    );
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS tecnicos (
+        id SERIAL PRIMARY KEY,
+        codigo VARCHAR(20) UNIQUE NOT NULL,
+        nombre VARCHAR(100) NOT NULL,
+        telefono VARCHAR(20),
+        direccion VARCHAR(200),
+        correo VARCHAR(100),
+        usuario VARCHAR(50) UNIQUE NOT NULL,
+        password VARCHAR(100) NOT NULL
+    );
+    """)
+
+    cur.execute("""
+    INSERT INTO usuarios (username, password, rol)
+    VALUES (%s, %s, %s)
+    ON CONFLICT (username) DO NOTHING;
+    """, ("admin", "1234", "admin"))
+
+    cur.execute("""
+    INSERT INTO tecnicos (codigo, nombre, telefono, direccion, correo, usuario, password)
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
+    ON CONFLICT (usuario) DO NOTHING;
+    """, ("TEC001", "Juan Pérez", "3001234567", "Calle 123", "juan@example.com", "tecnico1", "abcd"))
+
+    conn.commit()
+    conn.close()
+    return {"msg": "Datos iniciales insertados correctamente"}
 
 # ---------------- ARCHIVOS ESTÁTICOS ----------------
 app.mount("/static", StaticFiles(directory="static"), name="static")
