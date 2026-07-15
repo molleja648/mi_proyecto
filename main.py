@@ -315,7 +315,35 @@ def metricas():
 def init_data():
     conn = get_conn()
     cur = conn.cursor()
-    # el resto del bloque igualito como ya lo tienes
+
+    # Crear tabla usuarios si no existe
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(50) UNIQUE NOT NULL,
+            password VARCHAR(50) NOT NULL,
+            rol VARCHAR(20) NOT NULL
+        )
+    """)
+
+    # Insertar usuario admin de prueba
+    cur.execute("""
+        INSERT INTO usuarios (username, password, rol)
+        VALUES ('admin', '1234', 'admin')
+        ON CONFLICT (username) DO NOTHING
+    """)
+
+    # Insertar técnico de prueba
+    cur.execute("""
+        INSERT INTO usuarios (username, password, rol)
+        VALUES ('tecnico1', 'abcd', 'tecnico')
+        ON CONFLICT (username) DO NOTHING
+    """)
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return {"msg": "Datos iniciales insertados correctamente"}
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS usuarios (
